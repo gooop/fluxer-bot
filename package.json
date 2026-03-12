@@ -1,0 +1,33 @@
+{
+  "name": "fluxer-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node --env-file=.env dist/index.js",
+    "dev": "node --env-file=.env --import tsx src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gooop/fluxer-bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/gooop/fluxer-bot/issues"
+  },
+  "homepage": "https://github.com/gooop/fluxer-bot#readme",
+  "dependencies": {
+    "@discordjs/core": "2.4.0",
+    "@discordjs/rest": "2.6.0",
+    "@discordjs/ws": "2.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.4.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
