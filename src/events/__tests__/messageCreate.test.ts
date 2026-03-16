@@ -3,12 +3,11 @@ import { GatewayDispatchEvents } from '@discordjs/core';
 import type { GatewayMessageCreateDispatchData } from 'discord-api-types/v10';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { messageCreateHandler } from '../messageCreate';
+import { commands } from '../../commands/commandHandler';
 
 vi.mock('../../commands/commandHandler', () => ({
     commands: { ping: vi.fn().mockResolvedValue({}) },
 }));
-
-const { commands } = await import('../../commands/commandHandler');
 
 function makeProps(overrides: { bot?: boolean; content?: string }) {
     const { bot = false, content = '' } = overrides;
