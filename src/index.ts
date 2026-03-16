@@ -1,9 +1,9 @@
-import { Client, GatewayDispatchEvents } from '@discordjs/core';
+import { Client } from '@discordjs/core';
 import { REST } from '@discordjs/rest';
 import { WebSocketManager } from '@discordjs/ws';
-import { createLogger } from './logger.js';
-
-const log = createLogger('index');
+import { registerEventHandlers } from './events/eventHandler';
+import { messageCreateHandler } from './events/messageCreate';
+import { readyHandler } from './events/ready';
 
 const token = process.env['FLUXER_BOT_TOKEN'];
 if (!token) {
@@ -21,22 +21,6 @@ const gateway = new WebSocketManager({
 
 const client = new Client({ rest, gateway });
 
-client.on(GatewayDispatchEvents.MessageCreate, async ({ api, data }) => {
-    if (data.author.bot) {
-        return;
-    }
-
-    if (data.content === '!ping') {
-        await api.channels.createMessage(data.channel_id, {
-            content: 'pong!',
-            message_reference: { message_id: data.id },
-        });
-    }
-});
-
-client.on(GatewayDispatchEvents.Ready, ({ data }) => {
-    const { username, discriminator } = data.user;
-    log.info(`Logged in as @${username}#${discriminator}`);
-});
+registerEventHandlers(client, [messageCreateHandler, readyHandler]);
 
 gateway.connect();
