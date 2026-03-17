@@ -15,7 +15,7 @@ function getQuotes(): DiscordMessage[] {
         const json = readFileSync(resolve(__dirname, '../../pinned-messages.json'), 'utf-8');
         _quotes = DiscordMessageBuilder.parseMessages(json);
     }
-    return _quotes;
+    return _quotes!;
 }
 
 export const commands = {
