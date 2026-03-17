@@ -28,6 +28,7 @@ export const commands = {
             message_reference: { message_id: data.id },
             ...(imgLocation && {
                 files: [{ name: imgLocation, data: readFileSync(resolve(__dirname, '../../pinned-message-contents', imgLocation)) }],
+                attachments: [{ id: '0', filename: imgLocation }],
             }),
         });
     },

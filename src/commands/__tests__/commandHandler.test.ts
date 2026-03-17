@@ -57,6 +57,7 @@ describe('commands.quote', () => {
             content: '"with image" -PicPoster',
             message_reference: { message_id: 'msg-1' },
             files: [{ name: '1234567890.png', data: Buffer.from('fake-image-data') }],
+            attachments: [{ id: '0', filename: '1234567890.png' }],
         });
     });
 });
