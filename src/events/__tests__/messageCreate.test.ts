@@ -6,7 +6,11 @@ import { messageCreateHandler } from '../messageCreate';
 import { commands } from '../../commands/commandHandler';
 
 vi.mock('../../commands/commandHandler', () => ({
-    commands: { ping: vi.fn().mockResolvedValue({}), default: vi.fn().mockResolvedValue({}) },
+    commands: {
+        ping: vi.fn().mockResolvedValue({}),
+        default: vi.fn().mockResolvedValue({}),
+        quote: vi.fn().mockResolvedValue({}),
+    },
 }));
 
 function makeProps(overrides: { bot?: boolean; content?: string }) {
@@ -38,6 +42,17 @@ describe('messageCreateHandler', () => {
             await messageCreateHandler.handler({ api, data });
 
             expect(commands.ping).toHaveBeenCalledWith({ api, data });
+        },
+    );
+
+    it.each(['!rc quote', '!rc QUOTE', '!rc Quote'])(
+        'calls commands.quote for: %s',
+        async (content) => {
+            const { api, data } = makeProps({ content });
+
+            await messageCreateHandler.handler({ api, data });
+
+            expect(commands.quote).toHaveBeenCalledWith({ api, data });
         },
     );
 
