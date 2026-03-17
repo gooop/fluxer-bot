@@ -1,29 +1,30 @@
 import type { API } from '@discordjs/core';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+import { DiscordMessageBuilder, type DiscordMessage } from 'discord-message-builder';
 
 type CommandProps = {
     api: API;
     data: { channel_id: string; id: string; content: string };
 };
 
-const quotes = [
-    { text: 'The only way to do great work is to love what you do.', author: 'Jobs' },
-    { text: 'In the middle of every difficulty lies opportunity.', author: 'Einstein' },
-    {
-        text: 'It does not matter how slowly you go as long as you do not stop.',
-        author: 'Confucius',
-    },
-    { text: 'Life is what happens when you are busy making other plans.', author: 'Lennon' },
-    {
-        text: 'The future belongs to those who believe in the beauty of their dreams.',
-        author: 'Roosevelt',
-    },
-];
+let _quotes: DiscordMessage[] | null = null;
+
+function getQuotes(): DiscordMessage[] {
+    if (_quotes === null) {
+        const json = readFileSync(resolve(__dirname, '../../pinned-messages.json'), 'utf-8');
+        _quotes = DiscordMessageBuilder.parseMessages(json);
+    }
+    return _quotes;
+}
 
 export const commands = {
     quote: async ({ api, data }: CommandProps) => {
-        const { text, author } = quotes[Math.floor(Math.random() * quotes.length)];
+        const quotes = getQuotes();
+        const { message, authorNickname, authorUsername } = quotes[Math.floor(Math.random() * quotes.length)];
+        const author = authorNickname || authorUsername;
         await api.channels.createMessage(data.channel_id, {
-            content: `"${text}" -${author}`,
+            content: `"${message}" -${author}`,
             message_reference: { message_id: data.id },
         });
     },

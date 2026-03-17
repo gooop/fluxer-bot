@@ -28,7 +28,8 @@
   "dependencies": {
     "@discordjs/core": "2.4.0",
     "@discordjs/rest": "2.6.0",
-    "@discordjs/ws": "2.0.4"
+    "@discordjs/ws": "2.0.4",
+    "discord-message-builder": "file:packages/discord-message-builder"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

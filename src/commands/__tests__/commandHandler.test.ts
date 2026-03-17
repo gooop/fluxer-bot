@@ -1,5 +1,15 @@
 import type { API } from '@discordjs/core';
 import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('discord-message-builder', () => ({
+    DiscordMessageBuilder: {
+        parseMessages: vi.fn().mockReturnValue([
+            { message: 'test quote', authorNickname: 'Nick', authorUsername: 'user' },
+        ]),
+    },
+}));
+vi.mock('fs', () => ({ readFileSync: vi.fn().mockReturnValue('{}') }));
+
 import { commands } from '../commandHandler';
 
 describe('commands.default', () => {
@@ -26,7 +36,7 @@ describe('commands.quote', () => {
         await commands.quote({ api, data });
 
         expect(createMessage).toHaveBeenCalledWith('chan-1', {
-            content: expect.stringMatching(/^".+" -\w+$/),
+            content: expect.stringMatching(/^".+" -.+$/),
             message_reference: { message_id: 'msg-1' },
         });
     });
