@@ -41,7 +41,7 @@ var DiscordMessageBuilder = class _DiscordMessageBuilder {
       imgLocation: _DiscordMessageBuilder.findImageLocation(raw.id, raw.attachments, options)
     };
   }
-  static findImageLocation(messageId, attachments, options) {
+  static findImageLocation(_messageId, attachments, options) {
     const img = attachments.find((a) => {
       const ext = a.fileName.split(".").at(-1)?.toLowerCase() ?? "";
       return IMAGE_EXTENSIONS.has(ext);
@@ -49,7 +49,7 @@ var DiscordMessageBuilder = class _DiscordMessageBuilder {
     if (!img) return null;
     if (options.useLocalImages) {
       const ext = img.fileName.split(".").at(-1).toLowerCase();
-      return `${messageId}.${ext}`;
+      return `${img.id}.${ext}`;
     }
     return img.url;
   }
