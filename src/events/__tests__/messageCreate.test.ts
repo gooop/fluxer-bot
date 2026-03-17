@@ -6,7 +6,7 @@ import { messageCreateHandler } from '../messageCreate';
 import { commands } from '../../commands/commandHandler';
 
 vi.mock('../../commands/commandHandler', () => ({
-    commands: { ping: vi.fn().mockResolvedValue({}) },
+    commands: { ping: vi.fn().mockResolvedValue({}), default: vi.fn().mockResolvedValue({}) },
 }));
 
 function makeProps(overrides: { bot?: boolean; content?: string }) {
@@ -30,16 +30,19 @@ describe('messageCreateHandler', () => {
         expect(messageCreateHandler.event).toBe(GatewayDispatchEvents.MessageCreate);
     });
 
-    it('calls commands.ping on !ping', async () => {
-        const { api, data } = makeProps({ content: '!ping' });
+    it.each(['!rc ping', '!rc PING', '!rc Ping', '!rc pInG'])(
+        'calls commands.ping for: %s',
+        async (content) => {
+            const { api, data } = makeProps({ content });
 
-        await messageCreateHandler.handler({ api, data });
+            await messageCreateHandler.handler({ api, data });
 
-        expect(commands.ping).toHaveBeenCalledWith({ api, data });
-    });
+            expect(commands.ping).toHaveBeenCalledWith({ api, data });
+        },
+    );
 
     it('ignores messages from bots', async () => {
-        const { api, data } = makeProps({ bot: true, content: '!ping' });
+        const { api, data } = makeProps({ bot: true, content: '!rc ping' });
 
         await messageCreateHandler.handler({ api, data });
 
@@ -53,4 +56,15 @@ describe('messageCreateHandler', () => {
 
         expect(commands.ping).not.toHaveBeenCalled();
     });
+
+    it.each(['!rc', '!rc fhsdfsdha', '!rc notACommand', '!rc 🚀', '!rc ping 🎉 extra'])(
+        'calls commands.default for unrecognised input: %s',
+        async (content) => {
+            const { api, data } = makeProps({ content });
+
+            await messageCreateHandler.handler({ api, data });
+
+            expect(commands.default).toHaveBeenCalledWith({ api, data });
+        },
+    );
 });

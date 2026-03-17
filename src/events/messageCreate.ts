@@ -12,9 +12,11 @@ export const messageCreateHandler = createEventHandler(
             return;
         }
 
-        if (data.content === '!ping') {
-            log.info(`@${data.author.username}#${data.author.discriminator} called !ping`);
+        if (data.content.toLowerCase() === '!rc ping') {
+            log.info(`@${data.author.username}#${data.author.discriminator} called !rc ping`);
             await commands.ping({ api, data });
+        } else if (data.content.startsWith('!rc')) {
+            await commands.default({ api, data });
         }
     },
 );
