@@ -13,11 +13,13 @@ export const messageCreateHandler = createEventHandler(
         }
 
         if (data.content.toLowerCase() === '!rc quote') {
+            log.info(`@${data.author.username}#${data.author.discriminator} called !rc quote`);
             await commands.quote({ api, data });
         } else if (data.content.toLowerCase() === '!rc ping') {
             log.info(`@${data.author.username}#${data.author.discriminator} called !rc ping`);
             await commands.ping({ api, data });
         } else if (data.content.startsWith('!rc')) {
+            log.info(`@${data.author.username}#${data.author.discriminator} called unknown command: ${data.content}`);
             await commands.default({ api, data });
         }
     },
