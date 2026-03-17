@@ -13,7 +13,7 @@ let _quotes: DiscordMessage[] | null = null;
 function getQuotes(): DiscordMessage[] {
     if (_quotes === null) {
         const json = readFileSync(resolve(__dirname, '../../pinned-messages.json'), 'utf-8');
-        _quotes = DiscordMessageBuilder.parseMessages(json);
+        _quotes = DiscordMessageBuilder.parseMessages(json, { useLocalImages: true });
     }
     return _quotes!;
 }
@@ -21,11 +21,14 @@ function getQuotes(): DiscordMessage[] {
 export const commands = {
     quote: async ({ api, data }: CommandProps) => {
         const quotes = getQuotes();
-        const { message, authorNickname, authorUsername } = quotes[Math.floor(Math.random() * quotes.length)];
+        const { message, authorNickname, authorUsername, imgLocation } = quotes[Math.floor(Math.random() * quotes.length)];
         const author = authorNickname || authorUsername;
         await api.channels.createMessage(data.channel_id, {
             content: `"${message}" -${author}`,
             message_reference: { message_id: data.id },
+            ...(imgLocation && {
+                files: [{ name: imgLocation, data: readFileSync(resolve(__dirname, '../../pinned-message-contents', imgLocation)) }],
+            }),
         });
     },
     ping: async ({ api, data }: CommandProps) => {
