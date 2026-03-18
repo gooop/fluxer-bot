@@ -13,16 +13,24 @@ type CommandProps = {
 
 function readSubscribers(): string[] {
     if (!existsSync(SUBSCRIBERS_PATH)) return [];
-    return JSON.parse(readFileSync(SUBSCRIBERS_PATH, 'utf-8')) as string[];
+    try {
+        return JSON.parse(readFileSync(SUBSCRIBERS_PATH, 'utf-8')) as string[];
+    } catch {
+        return [];
+    }
 }
 
 function writeSubscribers(subscribers: string[]): void {
     writeFileSync(SUBSCRIBERS_PATH, JSON.stringify(subscribers), 'utf-8');
 }
 
+function pickRandomQuote() {
+    return quotes[Math.floor(Math.random() * quotes.length)];
+}
+
 export const commands = {
     quote: async ({ api, data }: CommandProps) => {
-        const msg = quotes[Math.floor(Math.random() * quotes.length)];
+        const msg = pickRandomQuote();
         const { content, imageAttachment } = formatQuote(msg);
         await api.channels.createMessage(data.channel_id, {
             content,
@@ -31,7 +39,7 @@ export const commands = {
         });
     },
     quoteStart: async ({ api, data }: CommandProps) => {
-        const msg = quotes[Math.floor(Math.random() * quotes.length)];
+        const msg = pickRandomQuote();
         const { content, imageAttachment } = formatQuote(msg);
         await api.channels.createMessage(data.channel_id, {
             content,
