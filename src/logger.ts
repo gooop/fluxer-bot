@@ -13,7 +13,8 @@ export function createLogger(module: string) {
     return Object.fromEntries(
         severities.map((sev) => [
             sev,
-            (message: string) => consoleMethods[sev](`[${new Date().toISOString()}][${module}][${sev}]: ${message}`),
+            (message: string, ...args: unknown[]) =>
+                consoleMethods[sev](`[${new Date().toISOString()}][${module}][${sev}]: ${message}`, ...args),
         ]),
-    ) as Record<Severity, (message: string) => void>;
+    ) as Record<Severity, (message: string, ...args: unknown[]) => void>;
 }
