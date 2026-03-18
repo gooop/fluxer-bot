@@ -13,7 +13,11 @@ const MAX_TIMEOUT_MS = 2 ** 31 - 2; // Node setTimeout max safe delay (~24.8 day
 
 function readSchedule(): string[] {
     if (!existsSync(SCHEDULE_PATH)) return [];
-    return JSON.parse(readFileSync(SCHEDULE_PATH, 'utf-8')) as string[];
+    try {
+        return JSON.parse(readFileSync(SCHEDULE_PATH, 'utf-8')) as string[];
+    } catch {
+        return [];
+    }
 }
 
 function writeSchedule(schedule: string[]): void {
