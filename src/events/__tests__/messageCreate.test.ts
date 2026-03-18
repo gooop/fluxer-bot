@@ -83,3 +83,26 @@ describe('messageCreateHandler', () => {
         },
     );
 });
+
+describe('messageCreateHandler error handling', () => {
+    it('does not throw when commands.quote rejects', async () => {
+        vi.mocked(commands.quote).mockRejectedValueOnce(new Error('discord api down'));
+        const { api, data } = makeProps({ content: '!rc quote' });
+
+        await expect(messageCreateHandler.handler({ api, data })).resolves.not.toThrow();
+    });
+
+    it('does not throw when commands.ping rejects', async () => {
+        vi.mocked(commands.ping).mockRejectedValueOnce(new Error('discord api down'));
+        const { api, data } = makeProps({ content: '!rc ping' });
+
+        await expect(messageCreateHandler.handler({ api, data })).resolves.not.toThrow();
+    });
+
+    it('does not throw when commands.default rejects', async () => {
+        vi.mocked(commands.default).mockRejectedValueOnce(new Error('discord api down'));
+        const { api, data } = makeProps({ content: '!rc unknown' });
+
+        await expect(messageCreateHandler.handler({ api, data })).resolves.not.toThrow();
+    });
+});
