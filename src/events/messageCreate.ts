@@ -12,7 +12,21 @@ export const messageCreateHandler = createEventHandler(
             return;
         }
 
-        if (data.content.toLowerCase() === '!rc quote') {
+        if (data.content.toLowerCase() === '!rc quote start') {
+            log.info(`@${data.author.username}#${data.author.discriminator} called !rc quote start`);
+            try {
+                await commands.quoteStart({ api, data });
+            } catch (err) {
+                log.error('quoteStart failed with error: ', err);
+            }
+        } else if (data.content.toLowerCase() === '!rc quote stop') {
+            log.info(`@${data.author.username}#${data.author.discriminator} called !rc quote stop`);
+            try {
+                await commands.quoteStop({ api, data });
+            } catch (err) {
+                log.error('quoteStop failed with error: ', err);
+            }
+        } else if (data.content.toLowerCase() === '!rc quote') {
             log.info(`@${data.author.username}#${data.author.discriminator} called !rc quote`);
             try {
                 await commands.quote({ api, data });

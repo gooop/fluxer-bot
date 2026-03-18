@@ -10,6 +10,8 @@ vi.mock('../../commands/commandHandler', () => ({
         ping: vi.fn().mockResolvedValue({}),
         default: vi.fn().mockResolvedValue({}),
         quote: vi.fn().mockResolvedValue({}),
+        quoteStart: vi.fn().mockResolvedValue({}),
+        quoteStop: vi.fn().mockResolvedValue({}),
     },
 }));
 
@@ -56,6 +58,28 @@ describe('messageCreateHandler', () => {
         },
     );
 
+    it.each(['!rc quote start', '!rc QUOTE START', '!rc Quote Start'])(
+        'calls commands.quoteStart for: %s',
+        async (content) => {
+            const { api, data } = makeProps({ content });
+
+            await messageCreateHandler.handler({ api, data });
+
+            expect(commands.quoteStart).toHaveBeenCalledWith({ api, data });
+        },
+    );
+
+    it.each(['!rc quote stop', '!rc QUOTE STOP', '!rc Quote Stop'])(
+        'calls commands.quoteStop for: %s',
+        async (content) => {
+            const { api, data } = makeProps({ content });
+
+            await messageCreateHandler.handler({ api, data });
+
+            expect(commands.quoteStop).toHaveBeenCalledWith({ api, data });
+        },
+    );
+
     it('ignores messages from bots', async () => {
         const { api, data } = makeProps({ bot: true, content: '!rc ping' });
 
@@ -82,6 +106,22 @@ describe('messageCreateHandler', () => {
             expect(commands.default).toHaveBeenCalledWith({ api, data });
         },
     );
+});
+
+describe('messageCreateHandler quoteStart/quoteStop error handling', () => {
+    it('does not throw when commands.quoteStart rejects', async () => {
+        vi.mocked(commands.quoteStart).mockRejectedValueOnce(new Error('fail'));
+        const { api, data } = makeProps({ content: '!rc quote start' });
+
+        await expect(messageCreateHandler.handler({ api, data })).resolves.not.toThrow();
+    });
+
+    it('does not throw when commands.quoteStop rejects', async () => {
+        vi.mocked(commands.quoteStop).mockRejectedValueOnce(new Error('fail'));
+        const { api, data } = makeProps({ content: '!rc quote stop' });
+
+        await expect(messageCreateHandler.handler({ api, data })).resolves.not.toThrow();
+    });
 });
 
 describe('messageCreateHandler error handling', () => {
