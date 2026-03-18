@@ -1,35 +1,32 @@
 import type { API } from '@discordjs/core';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { DiscordMessageBuilder, type DiscordMessage } from 'discord-message-builder';
+import { DiscordMessageBuilder } from 'discord-message-builder';
 
 type CommandProps = {
     api: API;
     data: { channel_id: string; id: string; content: string };
 };
 
-let _quotes: DiscordMessage[] | null = null;
-
-function getQuotes(): DiscordMessage[] {
-    if (_quotes === null) {
-        const json = readFileSync(resolve(__dirname, '../../pinned-messages.json'), 'utf-8');
-        _quotes = DiscordMessageBuilder.parseMessages(json, { useLocalImages: true });
-    }
-    return _quotes!;
-}
+const quotes = DiscordMessageBuilder.parseMessages(
+    readFileSync(resolve(__dirname, '../../pinned-messages.json'), 'utf-8'),
+    { useLocalImages: true },
+);
 
 export const commands = {
     quote: async ({ api, data }: CommandProps) => {
-        const quotes = getQuotes();
         const { message, authorNickname, authorUsername, imgLocation } = quotes[Math.floor(Math.random() * quotes.length)];
         const author = authorNickname || authorUsername;
+        const imageAttachment = imgLocation
+            ? {
+                  files: [{ name: imgLocation, data: readFileSync(resolve(__dirname, '../../pinned-message-contents', imgLocation)) }],
+                  attachments: [{ id: '0', filename: imgLocation }],
+              }
+            : {};
         await api.channels.createMessage(data.channel_id, {
             content: `"${message}" -${author}`,
             message_reference: { message_id: data.id },
-            ...(imgLocation && {
-                files: [{ name: imgLocation, data: readFileSync(resolve(__dirname, '../../pinned-message-contents', imgLocation)) }],
-                attachments: [{ id: '0', filename: imgLocation }],
-            }),
+            ...imageAttachment,
         });
     },
     ping: async ({ api, data }: CommandProps) => {

@@ -1,5 +1,5 @@
 import type { API } from '@discordjs/core';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('discord-message-builder', () => ({
     DiscordMessageBuilder: {
@@ -29,14 +29,25 @@ describe('commands.default', () => {
 });
 
 describe('commands.quote', () => {
+    let createMessage: ReturnType<typeof vi.fn>;
+    let api: API;
+    let data: { channel_id: string; id: string; content: string };
+    let randomSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+        createMessage = vi.fn().mockResolvedValue({});
+        api = { channels: { createMessage } } as unknown as API;
+        data = { channel_id: 'chan-1', id: 'msg-1', content: '!rc quote' };
+    });
+
+    afterEach(() => {
+        randomSpy.mockRestore();
+    });
+
     it('sends text content only when imgLocation is null', async () => {
-        const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0); // selects index 0 (no image)
-        const createMessage = vi.fn().mockResolvedValue({});
-        const api = { channels: { createMessage } } as unknown as API;
-        const data = { channel_id: 'chan-1', id: 'msg-1', content: '!rc quote' };
+        randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0); // Math.floor(0 * 2) = 0 → text-only quote
 
         await commands.quote({ api, data });
-        randomSpy.mockRestore();
 
         expect(createMessage).toHaveBeenCalledWith('chan-1', {
             content: '"text only" -Nick',
@@ -45,13 +56,9 @@ describe('commands.quote', () => {
     });
 
     it('sends image attachment when imgLocation is set', async () => {
-        const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.5); // selects index 1 (with image)
-        const createMessage = vi.fn().mockResolvedValue({});
-        const api = { channels: { createMessage } } as unknown as API;
-        const data = { channel_id: 'chan-1', id: 'msg-1', content: '!rc quote' };
+        randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.5); // Math.floor(0.5 * 2) = 1 → image quote
 
         await commands.quote({ api, data });
-        randomSpy.mockRestore();
 
         expect(createMessage).toHaveBeenCalledWith('chan-1', {
             content: '"with image" -PicPoster',
