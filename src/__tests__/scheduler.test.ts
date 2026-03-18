@@ -145,7 +145,7 @@ describe('initScheduler', () => {
         mockFs(JSON.stringify([futureTime]), JSON.stringify(['chan-1', 'chan-2']));
 
         initScheduler(api);
-        await vi.runAllTimersAsync();
+        await vi.advanceTimersByTimeAsync(60_000);
 
         expect(createMessage).toHaveBeenCalledWith('chan-1', expect.objectContaining({ content: expect.any(String) }));
         expect(createMessage).toHaveBeenCalledWith('chan-2', expect.objectContaining({ content: expect.any(String) }));
@@ -158,7 +158,7 @@ describe('initScheduler', () => {
         mockFs(JSON.stringify([futureTime]), '[]');
 
         initScheduler(api);
-        await vi.runAllTimersAsync();
+        await vi.advanceTimersByTimeAsync(60_000);
 
         expect(createMessage).not.toHaveBeenCalled();
     });
@@ -172,7 +172,7 @@ describe('initScheduler', () => {
         mockFs(JSON.stringify([futureTime]), JSON.stringify(['chan-1', 'chan-2']));
 
         initScheduler(api);
-        await vi.runAllTimersAsync();
+        await vi.advanceTimersByTimeAsync(60_000);
 
         expect(createMessage).toHaveBeenCalledTimes(2);
         expect(createMessage).toHaveBeenCalledWith('chan-2', expect.any(Object));

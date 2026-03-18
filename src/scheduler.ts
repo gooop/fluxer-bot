@@ -84,9 +84,7 @@ async function fire(api: API, schedule: string[]): Promise<void> {
         }
     }
 
-    const hasRemaining = schedule.length > 0;
-
-    if (!hasRemaining) {
+    if (schedule.length === 0) {
         const nextMonth = new Date();
         nextMonth.setMonth(nextMonth.getMonth() + 1);
         nextMonth.setDate(1);
@@ -94,10 +92,7 @@ async function fire(api: API, schedule: string[]): Promise<void> {
     }
 
     writeSchedule(schedule);
-
-    if (hasRemaining) {
-        scheduleNext(api, schedule);
-    }
+    scheduleNext(api, schedule);
 }
 
 function scheduleNext(api: API, schedule: string[]): void {
