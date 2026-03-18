@@ -109,7 +109,7 @@ describe('commands.quoteStart', () => {
         createMessage = vi.fn().mockResolvedValue({});
         api = { channels: { createMessage } } as unknown as API;
         data = { channel_id: 'chan-1', id: 'msg-1', content: '!rc quote start' };
-        vi.mocked(readFileSync).mockReturnValue('[]' as unknown as Buffer);
+        vi.mocked(readFileSync).mockReturnValue('[]' as string);
         vi.mocked(writeFileSync).mockReset();
     });
 
@@ -141,7 +141,7 @@ describe('commands.quoteStart', () => {
     });
 
     it('does not add duplicate channel', async () => {
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(['chan-1']) as unknown as Buffer);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(['chan-1']) as string);
 
         await commands.quoteStart({ api, data });
 
@@ -162,7 +162,7 @@ describe('commands.quoteStop', () => {
     });
 
     it('removes channel from subscribers.json', async () => {
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(['chan-1', 'chan-2']) as unknown as Buffer);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(['chan-1', 'chan-2']) as string);
 
         await commands.quoteStop({ api, data });
 
@@ -174,7 +174,7 @@ describe('commands.quoteStop', () => {
     });
 
     it('replies with confirmation', async () => {
-        vi.mocked(readFileSync).mockReturnValue('[]' as unknown as Buffer);
+        vi.mocked(readFileSync).mockReturnValue('[]' as string);
 
         await commands.quoteStop({ api, data });
 
@@ -185,7 +185,7 @@ describe('commands.quoteStop', () => {
     });
 
     it('is idempotent when channel is not subscribed', async () => {
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(['chan-2']) as unknown as Buffer);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(['chan-2']) as string);
 
         await commands.quoteStop({ api, data });
 
