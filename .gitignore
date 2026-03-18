@@ -143,3 +143,5 @@ vite.config.ts.timestamp-*
 pinned-message-contents/
 pinned-messages.json
 docs/superpowers
+schedule.json
+subscribers.json
