@@ -99,3 +99,99 @@ describe('commands.ping', () => {
         });
     });
 });
+
+describe('commands.quoteStart', () => {
+    let createMessage: ReturnType<typeof vi.fn>;
+    let api: API;
+    let data: { channel_id: string; id: string; content: string };
+
+    beforeEach(() => {
+        createMessage = vi.fn().mockResolvedValue({});
+        api = { channels: { createMessage } } as unknown as API;
+        data = { channel_id: 'chan-1', id: 'msg-1', content: '!rc quote start' };
+        vi.mocked(readFileSync).mockReturnValue('[]' as unknown as Buffer);
+        vi.mocked(writeFileSync).mockReset();
+    });
+
+    it('posts a standalone quote (no message_reference)', async () => {
+        await commands.quoteStart({ api, data });
+
+        const firstCall = createMessage.mock.calls[0];
+        expect(firstCall[1]).not.toHaveProperty('message_reference');
+        expect(firstCall[1]).toHaveProperty('content');
+    });
+
+    it('replies with confirmation', async () => {
+        await commands.quoteStart({ api, data });
+
+        expect(createMessage).toHaveBeenCalledWith('chan-1', {
+            content: 'Scheduled quotes enabled for this channel.',
+            message_reference: { message_id: 'msg-1' },
+        });
+    });
+
+    it('writes channel to subscribers.json', async () => {
+        await commands.quoteStart({ api, data });
+
+        expect(writeFileSync).toHaveBeenCalledWith(
+            expect.stringContaining('subscribers.json'),
+            expect.stringContaining('chan-1'),
+            'utf-8',
+        );
+    });
+
+    it('does not add duplicate channel', async () => {
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(['chan-1']) as unknown as Buffer);
+
+        await commands.quoteStart({ api, data });
+
+        expect(writeFileSync).not.toHaveBeenCalled();
+    });
+});
+
+describe('commands.quoteStop', () => {
+    let createMessage: ReturnType<typeof vi.fn>;
+    let api: API;
+    let data: { channel_id: string; id: string; content: string };
+
+    beforeEach(() => {
+        createMessage = vi.fn().mockResolvedValue({});
+        api = { channels: { createMessage } } as unknown as API;
+        data = { channel_id: 'chan-1', id: 'msg-1', content: '!rc quote stop' };
+        vi.mocked(writeFileSync).mockReset();
+    });
+
+    it('removes channel from subscribers.json', async () => {
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(['chan-1', 'chan-2']) as unknown as Buffer);
+
+        await commands.quoteStop({ api, data });
+
+        expect(writeFileSync).toHaveBeenCalledWith(
+            expect.stringContaining('subscribers.json'),
+            expect.not.stringContaining('chan-1'),
+            'utf-8',
+        );
+    });
+
+    it('replies with confirmation', async () => {
+        vi.mocked(readFileSync).mockReturnValue('[]' as unknown as Buffer);
+
+        await commands.quoteStop({ api, data });
+
+        expect(createMessage).toHaveBeenCalledWith('chan-1', {
+            content: 'Scheduled quotes disabled for this channel.',
+            message_reference: { message_id: 'msg-1' },
+        });
+    });
+
+    it('is idempotent when channel is not subscribed', async () => {
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(['chan-2']) as unknown as Buffer);
+
+        await commands.quoteStop({ api, data });
+
+        expect(createMessage).toHaveBeenCalledWith('chan-1', {
+            content: 'Scheduled quotes disabled for this channel.',
+            message_reference: { message_id: 'msg-1' },
+        });
+    });
+});
