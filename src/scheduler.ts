@@ -113,7 +113,16 @@ function scheduleNext(api: API, schedule: string[]): void {
     setTimeout(() => void fire(api, schedule), Math.max(0, delay));
 }
 
+let initialized = false;
+
+export function resetScheduler(): void {
+    initialized = false;
+}
+
 export function initScheduler(api: API): void {
+    if (initialized) return;
+    initialized = true;
+
     const now = new Date();
     let schedule = readSchedule().filter(t => new Date(t) > now);
 

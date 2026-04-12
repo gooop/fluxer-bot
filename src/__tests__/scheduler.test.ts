@@ -21,7 +21,7 @@ vi.mock('../quotes', () => ({
 }));
 
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { generateSchedule, initScheduler } from '../scheduler';
+import { generateSchedule, initScheduler, resetScheduler } from '../scheduler';
 
 const MARCH_17 = new Date(2026, 2, 17, 12, 0, 0); // March 17, 2026 noon
 
@@ -99,6 +99,7 @@ describe('initScheduler', () => {
         vi.setSystemTime(MARCH_17);
         api = { channels: { createMessage: vi.fn().mockResolvedValue({}) } } as unknown as API;
         vi.mocked(writeFileSync).mockReset();
+        resetScheduler();
     });
 
     afterEach(() => {
@@ -149,6 +150,20 @@ describe('initScheduler', () => {
 
         expect(createMessage).toHaveBeenCalledWith('chan-1', expect.objectContaining({ content: expect.any(String) }));
         expect(createMessage).toHaveBeenCalledWith('chan-2', expect.objectContaining({ content: expect.any(String) }));
+    });
+
+    it('does not send duplicate messages when called twice (e.g. on reconnect)', async () => {
+        const futureTime = new Date(2026, 2, 17, 12, 1).toISOString(); // 1 minute from now
+        const createMessage = vi.fn().mockResolvedValue({});
+        api = { channels: { createMessage } } as unknown as API;
+        mockFs(JSON.stringify([futureTime]), JSON.stringify(['chan-1']));
+
+        initScheduler(api);
+        initScheduler(api); // simulates Ready firing twice (e.g. on reconnect)
+        await vi.advanceTimersByTimeAsync(60_000);
+
+        // Should only message chan-1 once, not once per scheduler instance
+        expect(createMessage).toHaveBeenCalledTimes(1);
     });
 
     it('does not post when there are no subscribers', async () => {
