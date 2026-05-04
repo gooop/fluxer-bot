@@ -11,6 +11,8 @@ const SCHEDULE_PATH = resolve(__dirname, '../schedule.json');
 const SUBSCRIBERS_PATH = resolve(__dirname, '../subscribers.json');
 const MAX_TIMEOUT_MS = 2 ** 31 - 2; // Node setTimeout max safe delay (~24.8 days)
 
+let activeTimer: ReturnType<typeof setTimeout> | undefined;
+
 function readSchedule(): string[] {
     if (!existsSync(SCHEDULE_PATH)) return [];
     try {
@@ -106,14 +108,16 @@ function scheduleNext(api: API, schedule: string[]): void {
 
     if (delay > MAX_TIMEOUT_MS) {
         // Delay too large for a single setTimeout — step forward and re-check
-        setTimeout(() => scheduleNext(api, schedule), MAX_TIMEOUT_MS);
+        activeTimer = setTimeout(() => scheduleNext(api, schedule), MAX_TIMEOUT_MS);
         return;
     }
 
-    setTimeout(() => void fire(api, schedule), Math.max(0, delay));
+    activeTimer = setTimeout(() => void fire(api, schedule), Math.max(0, delay));
 }
 
 export function initScheduler(api: API): void {
+    if (activeTimer) clearTimeout(activeTimer);
+
     const now = new Date();
     let schedule = readSchedule().filter(t => new Date(t) > now);
 

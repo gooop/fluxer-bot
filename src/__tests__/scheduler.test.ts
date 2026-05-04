@@ -163,6 +163,19 @@ describe('initScheduler', () => {
         expect(createMessage).not.toHaveBeenCalled();
     });
 
+    it('calling initScheduler twice does not double-fire when timer hits', async () => {
+        const futureTime = new Date(2026, 2, 17, 12, 1).toISOString();
+        const createMessage = vi.fn().mockResolvedValue({});
+        api = { channels: { createMessage } } as unknown as API;
+        mockFs(JSON.stringify([futureTime]), JSON.stringify(['chan-1']));
+
+        initScheduler(api);
+        initScheduler(api);
+        await vi.advanceTimersByTimeAsync(60_000);
+
+        expect(createMessage).toHaveBeenCalledTimes(1);
+    });
+
     it('one failing channel does not prevent others from receiving', async () => {
         const futureTime = new Date(2026, 2, 17, 12, 1).toISOString();
         const createMessage = vi.fn()
